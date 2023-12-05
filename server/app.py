@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, make_response, jsonify
+from sqlalchemy import desc
 from flask_migrate import Migrate
 
 from models import db, Bakery, BakedGood
@@ -20,19 +21,53 @@ def index():
 
 @app.route('/bakeries')
 def bakeries():
-    return ''
+    Bakeries = []
+
+    for bakery in Bakery.query.all():
+        Bakeries.append(bakery.to_dict())
+
+    response = make_response(jsonify(Bakeries),200)
+    response.headers["Content-Type"] = "application/json"
+    return response
+
 
 @app.route('/bakeries/<int:id>')
 def bakery_by_id(id):
-    return ''
+    bakery = Bakery.query.filter_by(id=id).first()
+
+    bakery_dict =bakery.to_dict()
+
+    response = make_response(jsonify(bakery_dict),200)
+    response.headers["Content-Type"] ="application/json"
+    return response
 
 @app.route('/baked_goods/by_price')
 def baked_goods_by_price():
-    return ''
+   goods_by_price = []
+   
+   for good in BakedGood.query.order_by(desc(BakedGood.price)).all():
+        goods_by_price.append(good.to_dict())
+
+   response = make_response(
+        jsonify(goods_by_price),
+        200
+    )
+   response.headers['Content-Type'] = 'application/json'
+   return response
 
 @app.route('/baked_goods/most_expensive')
 def most_expensive_baked_good():
-    return ''
+  most_expensive = []
+   
+  for good in BakedGood.query.order_by(desc(BakedGood.price)).all():
+        most_expensive.append(good.to_dict())
+
+  response = make_response(
+        jsonify(most_expensive[0]),
+        200
+    )
+  response.headers['Content-Type'] = 'application/json'
+  return response
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
